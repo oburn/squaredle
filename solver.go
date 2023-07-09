@@ -35,3 +35,10 @@ func (path Path) visited(pt Pt) bool {
 	}
 	return false
 }
+
+func (path Path) addStep(pt Pt, ch string) Path {
+	return Path{
+		steps: append(path.steps, pt),
+		word:  path.word + ch,
+	}
+}

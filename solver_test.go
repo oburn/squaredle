@@ -45,3 +45,31 @@ func TestVisited(t *testing.T) {
 		}
 	}
 }
+
+func TestAddStep(t *testing.T) {
+	args := []struct {
+		input  Path
+		step   Pt
+		ch     string
+		expect Path
+	}{
+		{
+			input:  Path{steps: []Pt{{0, 0}}, word: "a"},
+			step:   Pt{1, 1},
+			ch:     "b",
+			expect: Path{steps: []Pt{{0, 0}, {1, 1}}, word: "ab"},
+		},
+		{
+			input:  Path{steps: []Pt{{0, 0}, {1, 1}}, word: "ab"},
+			step:   Pt{2, 2},
+			ch:     "c",
+			expect: Path{steps: []Pt{{0, 0}, {1, 1}, {2, 2}}, word: "abc"},
+		},
+	}
+	for _, a := range args {
+		got := a.input.addStep(a.step, a.ch)
+		if !reflect.DeepEqual(got, a.expect) {
+			t.Errorf("addStep(%v, %v, %v) = %v, expect %v", a.input, a.step, a.ch, got, a.expect)
+		}
+	}
+}
