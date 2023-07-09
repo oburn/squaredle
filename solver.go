@@ -26,3 +26,12 @@ func (p Pt) adjacent(width, height int) []Pt {
 	}
 	return result
 }
+
+func (path Path) visited(pt Pt) bool {
+	for _, p := range path.steps {
+		if p == pt {
+			return true
+		}
+	}
+	return false
+}

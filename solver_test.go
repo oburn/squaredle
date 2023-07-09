@@ -25,3 +25,23 @@ func TestPtAdjacent(t *testing.T) {
 		}
 	}
 }
+
+func TestVisited(t *testing.T) {
+	args := []struct {
+		path   Path
+		pt     Pt
+		expect bool
+	}{
+		{path: Path{steps: []Pt{{0, 0}}}, pt: Pt{0, 0}, expect: true},
+		{path: Path{steps: []Pt{{0, 0}}}, pt: Pt{0, 1}, expect: false},
+		{path: Path{steps: []Pt{{0, 0}, {1, 1}}}, pt: Pt{0, 0}, expect: true},
+		{path: Path{steps: []Pt{{0, 0}, {1, 1}}}, pt: Pt{1, 0}, expect: false},
+		{path: Path{steps: []Pt{{0, 0}, {1, 1}}}, pt: Pt{1, 1}, expect: true},
+	}
+	for _, a := range args {
+		got := a.path.visited(a.pt)
+		if got != a.expect {
+			t.Errorf("visited(%v) = %v, expect %v", a.pt, got, a.expect)
+		}
+	}
+}
