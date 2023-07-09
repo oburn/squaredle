@@ -1,7 +1,14 @@
 package main
 
+const (
+	MAX_WORD_LEN = 10
+)
+
 type Pt struct{ x, y int }
-type Grid struct{ rows []string }
+type Grid struct {
+	rows     []string
+	searcher func(word string) (exactMatch, partialMatch bool)
+}
 type Path struct {
 	steps []Pt
 	word  string
@@ -41,4 +48,41 @@ func (path Path) addStep(pt Pt, ch string) Path {
 		steps: append(path.steps, pt),
 		word:  path.word + ch,
 	}
+}
+
+func (g Grid) solve() []Path {
+	var result []Path
+
+	for y, row := range g.rows {
+		for x, ch := range row {
+			result = append(result, g.wordsFrom(Path{steps: []Pt{{x, y}}, word: string(ch)})...)
+		}
+	}
+	// result = append(result, g.wordsFrom(Path{steps: []Pt{{0, 0}}, word: string(g.rows[0][0])})...)
+
+	return result
+}
+
+func (g Grid) wordsFrom(path Path) []Path {
+	var result []Path
+
+	// Check is length of path not to big
+	if len(path.word) > MAX_WORD_LEN {
+		return result
+	}
+
+	exactMatch, partialMatch := g.searcher(path.word)
+	if exactMatch {
+		result = append(result, path)
+	}
+	if partialMatch {
+		for _, pt := range path.steps[len(path.steps)-1].adjacent(len(g.rows[0]), len(g.rows)) {
+			if !path.visited(pt) {
+				nextPath := path.addStep(pt, string(g.rows[pt.y][pt.x]))
+				result = append(result, g.wordsFrom(nextPath)...)
+			}
+		}
+	}
+
+	return result
 }
