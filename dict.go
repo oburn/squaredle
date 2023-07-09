@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"os"
+	"strings"
 	"unicode"
 )
 
@@ -45,5 +46,16 @@ func IsLower(s string) bool {
 }
 
 func (d *Dict) Search(word string) (exactMatch, partialMatch bool) {
+	for _, w := range d.words {
+		if w == word {
+			exactMatch = true
+		} else if strings.HasPrefix(w, word) {
+			partialMatch = true
+		}
+		if exactMatch && partialMatch {
+			break
+		}
+		// should really check if gone past where a match is possible
+	}
 	return
 }
