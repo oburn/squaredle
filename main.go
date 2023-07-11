@@ -27,20 +27,21 @@ func main() {
 		searcher: dict.Search,
 	}
 	paths := grid.solve()
-	// for _, path := range paths {
-	// 	fmt.Printf("solution: %s -> %v\n", path.word, path.steps)
-	// }
 
+	// dedup solutions
 	wordToPath := make(map[string]Path)
 	for _, path := range paths {
 		wordToPath[path.word] = path
 	}
+
+	// sort the words
 	var words []string
 	for k := range wordToPath {
 		words = append(words, k)
 	}
 	sort.Strings(words)
 
+	// output in sorted order, makes it easier to input
 	for _, word := range words {
 		fmt.Printf("%s\t-> %v\n", word, wordToPath[word].steps)
 	}
