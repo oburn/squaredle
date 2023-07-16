@@ -28,21 +28,23 @@ func main() {
 	}
 	paths := grid.solve()
 
-	// dedup solutions
-	wordToPath := make(map[string]Path)
+	// group by word
+	wordToPaths := make(map[string][]Path)
 	for _, path := range paths {
-		wordToPath[path.word] = path
+		wordToPaths[path.word] = append(wordToPaths[path.word], path)
 	}
 
 	// sort the words
 	var words []string
-	for k := range wordToPath {
+	for k := range wordToPaths {
 		words = append(words, k)
 	}
 	sort.Strings(words)
 
 	// output in sorted order, makes it easier to input
 	for _, word := range words {
-		fmt.Printf("%s\t-> %v\n", word, wordToPath[word].steps)
+		for _, path := range wordToPaths[word] {
+			fmt.Printf("%s\t-> %v\n", word, path.steps)
+		}
 	}
 }
