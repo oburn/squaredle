@@ -44,8 +44,13 @@ func (path Path) visited(pt Pt) bool {
 }
 
 func (path Path) addStep(pt Pt, ch string) Path {
+	// make a shallow copy of the array
+	length := len(path.steps) + 1
+	newSteps := make([]Pt, length)
+	copy(newSteps, path.steps)
+	newSteps[length-1] = pt
 	return Path{
-		steps: append(path.steps, pt),
+		steps: newSteps,
 		word:  path.word + ch,
 	}
 }
@@ -55,11 +60,11 @@ func (g Grid) solve() []Path {
 
 	for y, row := range g.rows {
 		for x, ch := range row {
-			result = append(result, g.wordsFrom(Path{steps: []Pt{{x, y}}, word: string(ch)})...)
+			temp := g.wordsFrom(Path{steps: []Pt{{x, y}}, word: string(ch)})
+			result = append(result, temp...)
 		}
 	}
 	// result = append(result, g.wordsFrom(Path{steps: []Pt{{0, 0}}, word: string(g.rows[0][0])})...)
-
 	return result
 }
 
@@ -79,7 +84,8 @@ func (g Grid) wordsFrom(path Path) []Path {
 		for _, pt := range path.steps[len(path.steps)-1].adjacent(len(g.rows[0]), len(g.rows)) {
 			if !path.visited(pt) {
 				nextPath := path.addStep(pt, string(g.rows[pt.y][pt.x]))
-				result = append(result, g.wordsFrom(nextPath)...)
+				tmp := g.wordsFrom(nextPath)
+				result = append(result, tmp...)
 			}
 		}
 	}
