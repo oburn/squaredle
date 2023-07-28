@@ -44,13 +44,12 @@ func (path Path) visited(pt Pt) bool {
 }
 
 func (path Path) addStep(pt Pt, ch string) Path {
-	// make a shallow copy of the array
-	length := len(path.steps) + 1
-	newSteps := make([]Pt, length)
-	copy(newSteps, path.steps)
-	newSteps[length-1] = pt
+	// trick here is to clip the capacity of the slice to its length
+	// so that when appending we get a new backing array
+	currlen := len(path.steps)
+	clipped := path.steps[0:currlen:currlen]
 	return Path{
-		steps: newSteps,
+		steps: append(clipped, pt),
 		word:  path.word + ch,
 	}
 }
@@ -60,11 +59,10 @@ func (g Grid) solve() []Path {
 
 	for y, row := range g.rows {
 		for x, ch := range row {
-			temp := g.wordsFrom(Path{steps: []Pt{{x, y}}, word: string(ch)})
-			result = append(result, temp...)
+			words := g.wordsFrom(Path{steps: []Pt{{x, y}}, word: string(ch)})
+			result = append(result, words...)
 		}
 	}
-	// result = append(result, g.wordsFrom(Path{steps: []Pt{{0, 0}}, word: string(g.rows[0][0])})...)
 	return result
 }
 
@@ -84,8 +82,8 @@ func (g Grid) wordsFrom(path Path) []Path {
 		for _, pt := range path.steps[len(path.steps)-1].adjacent(len(g.rows[0]), len(g.rows)) {
 			if !path.visited(pt) {
 				nextPath := path.addStep(pt, string(g.rows[pt.y][pt.x]))
-				tmp := g.wordsFrom(nextPath)
-				result = append(result, tmp...)
+				words := g.wordsFrom(nextPath)
+				result = append(result, words...)
 			}
 		}
 	}
