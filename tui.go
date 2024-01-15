@@ -10,28 +10,28 @@ import (
 )
 
 type tuiContext struct {
-	dict        *Dict
-	wordToPaths map[string][]Path
-	app         *tview.Application
-	textArea    *tview.TextArea
-	candidates  *tview.List
-	paths       *tview.TextView
+	dict           *Dict
+	wordToPaths    map[string][]Path
+	app            *tview.Application
+	inputArea      *tview.TextArea
+	candidatesList *tview.List
+	pathsView      *tview.TextView
 }
 
 func launch(useDict *Dict) {
 	myctx := tuiContext{
-		dict:       useDict,
-		app:        tview.NewApplication(),
-		textArea:   tview.NewTextArea(),
-		candidates: tview.NewList(),
-		paths:      tview.NewTextView(),
+		dict:           useDict,
+		app:            tview.NewApplication(),
+		inputArea:      tview.NewTextArea(),
+		candidatesList: tview.NewList(),
+		pathsView:      tview.NewTextView(),
 	}
 
 	//textArea.SetPlaceholder("Enter...")
-	myctx.textArea.SetText("atvo\ntain\nonon\ntnic", true)
-	myctx.textArea.SetBorder(true)
-	myctx.textArea.SetTitle("Letters")
-	myctx.textArea.SetDisabled(false)
+	myctx.inputArea.SetText("atvo\ntain\nonon\ntnic", true)
+	myctx.inputArea.SetBorder(true)
+	myctx.inputArea.SetTitle("Letters")
+	myctx.inputArea.SetDisabled(false)
 
 	applyButton := tview.NewButton("Apply")
 	applyButton.SetBorder(true)
@@ -43,32 +43,32 @@ func launch(useDict *Dict) {
 
 	leftCol := tview.NewFlex()
 	leftCol.SetDirection(tview.FlexRow)
-	leftCol.AddItem(myctx.textArea, 0, 1, false)
+	leftCol.AddItem(myctx.inputArea, 0, 1, false)
 	leftCol.AddItem(applyButton, 3, 1, false)
 	leftCol.AddItem(restartButton, 3, 1, false)
 
-	myctx.candidates.SetTitle("Candidates")
-	myctx.candidates.SetBorder(true)
-	myctx.candidates.ShowSecondaryText(false)
-	myctx.candidates.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
+	myctx.candidatesList.SetTitle("Candidates")
+	myctx.candidatesList.SetBorder(true)
+	myctx.candidatesList.ShowSecondaryText(false)
+	myctx.candidatesList.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
 		myctx.handleCandidateSelected()
 	})
-	myctx.candidates.SetChangedFunc(func(index int, main, secondary string, shortcut rune) {
+	myctx.candidatesList.SetChangedFunc(func(index int, main, secondary string, shortcut rune) {
 		myctx.handleCandidateChanged(main)
 	})
 
-	myctx.paths.SetTitle("Paths")
-	myctx.paths.SetBorder(true)
+	myctx.pathsView.SetTitle("Paths")
+	myctx.pathsView.SetBorder(true)
 
 	rightCol := tview.NewFlex()
 	rightCol.SetDirection(tview.FlexRow)
-	rightCol.AddItem(myctx.candidates, 0, 1, false)
-	rightCol.AddItem(myctx.paths, 6, 1, false)
+	rightCol.AddItem(myctx.candidatesList, 0, 1, false)
+	rightCol.AddItem(myctx.pathsView, 6, 1, false)
 
 	flex := tview.NewFlex().
 		AddItem(leftCol, 0, 1, false).
 		AddItem(rightCol, 0, 2, false)
-	if err := myctx.app.SetRoot(flex, true).EnableMouse(true).SetFocus(myctx.textArea).Run(); err != nil {
+	if err := myctx.app.SetRoot(flex, true).EnableMouse(true).SetFocus(myctx.inputArea).Run(); err != nil {
 		panic(err)
 	}
 }
@@ -77,8 +77,8 @@ func (ctx *tuiContext) handleApply() {
 	ctx.buildWordToPaths()
 
 	currentCandidates := []string{}
-	for i := ctx.candidates.GetItemCount() - 1; i >= 0; i-- {
-		main, _ := ctx.candidates.GetItemText(i)
+	for i := ctx.candidatesList.GetItemCount() - 1; i >= 0; i-- {
+		main, _ := ctx.candidatesList.GetItemText(i)
 		currentCandidates = append(currentCandidates, main)
 	}
 	validCandidates := lo.Keys(ctx.wordToPaths)
@@ -87,11 +87,11 @@ func (ctx *tuiContext) handleApply() {
 	sort.Strings(words)
 
 	// add the words as candidates
-	ctx.candidates.Clear()
+	ctx.candidatesList.Clear()
 	for _, w := range words {
-		ctx.candidates.AddItem(w, w, 0, nil)
+		ctx.candidatesList.AddItem(w, w, 0, nil)
 	}
-	ctx.app.SetFocus(ctx.candidates)
+	ctx.app.SetFocus(ctx.candidatesList)
 }
 
 func (ctx *tuiContext) handleRestart() {
@@ -105,15 +105,15 @@ func (ctx *tuiContext) handleRestart() {
 	sort.Strings(words)
 
 	// add the words as candidates
-	ctx.candidates.Clear()
+	ctx.candidatesList.Clear()
 	for _, w := range words {
-		ctx.candidates.AddItem(w, w, 0, nil)
+		ctx.candidatesList.AddItem(w, w, 0, nil)
 	}
-	ctx.app.SetFocus(ctx.candidates)
+	ctx.app.SetFocus(ctx.candidatesList)
 }
 
 func (ctx *tuiContext) handleCandidateSelected() {
-	ctx.candidates.RemoveItem(ctx.candidates.GetCurrentItem())
+	ctx.candidatesList.RemoveItem(ctx.candidatesList.GetCurrentItem())
 }
 
 func (ctx *tuiContext) handleCandidateChanged(main string) {
@@ -121,12 +121,12 @@ func (ctx *tuiContext) handleCandidateChanged(main string) {
 		return fmt.Sprintf("%v", item.steps)
 	})
 	allPaths := strings.Join(steps, "\n")
-	ctx.paths.SetText(allPaths)
+	ctx.pathsView.SetText(allPaths)
 }
 
 func (ctx *tuiContext) buildWordToPaths() {
 	rows := lo.Filter(
-		strings.Split(ctx.textArea.GetText(), "\n"),
+		strings.Split(ctx.inputArea.GetText(), "\n"),
 		func(item string, index int) bool { return lo.IsNotEmpty(item) },
 	)
 	grid := Grid{
