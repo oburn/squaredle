@@ -2,6 +2,45 @@
 
 Just because
 
+* TUI Design
+What would a text UI look like that is faster to use.
+
+Features:
+- Pane to enter the letters
+  + Ability to specify dimension on startup
+- List of available words
+  + Reduced to the set of words, no duplicates, sorted alphabetically
+  + Abilty to remove a word
+- Pane to show how to enter the selected words
+- Actions:
+  + Restart - rebuild the full list of available words
+  + Apply
+    * calculate list of possible words
+    * remove words from available words that are not in the list
+
+Mock up:
+
+#+BEGIN_EXAMPLE
++-Letters--+---Candidates----+
+|abcd      | abcd            |
+|efgh      | acccc           |
+|ijkl      | bbbbbb          |
+|mnop      | bbbbbb          |
+|          | ,,,,,           |
+|          | ,,,,,           |
+|          | ,,,,,           |
+|          | ,,,,,           |
++----------+ casjlkdalskjd   |
+|(A)pply   | another_word    |
+|(R)estart | twaasdad        |
++----------+-----------------+
++Paths:----------------------+
+|{0 0} {1 0} {2 1}           |
+|{0 0} {1 0} {2 1}           |
+|{0 0} {1 0} {2 1}           |
++----------------------------+
+#+END_EXAMPLE
+
 * Emacs Configuration
 # Local Variables:
 # org-confirm-babel-evaluate: nil
