@@ -125,7 +125,10 @@ func (ctx *tuiContext) handleCandidateChanged(main string) {
 }
 
 func (ctx *tuiContext) buildWordToPaths() {
-	rows := strings.Split(ctx.textArea.GetText(), "\n")
+	rows := lo.Filter(
+		strings.Split(ctx.textArea.GetText(), "\n"),
+		func(item string, index int) bool { return lo.IsNotEmpty(item) },
+	)
 	grid := Grid{
 		rows:     rows,
 		searcher: ctx.dict.Search,
