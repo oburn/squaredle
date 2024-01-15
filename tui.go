@@ -27,8 +27,7 @@ func launch(useDict *Dict) {
 		pathsView:      tview.NewTextView(),
 	}
 
-	//textArea.SetPlaceholder("Enter...")
-	myctx.inputArea.SetText("atvo\ntain\nonon\ntnic", true)
+	myctx.inputArea.SetPlaceholder("Enter...")
 	myctx.inputArea.SetBorder(true)
 	myctx.inputArea.SetTitle("Letters")
 	myctx.inputArea.SetDisabled(false)
