@@ -61,31 +61,29 @@ func launch(useDict *Dict) {
 	}
 }
 
-var counter = 0
-
 func handleApply() {
-	textArea.SetText("Apply clicked!", true)
-	counter++
-	candidates.AddItem(fmt.Sprintf("clicked %d", counter), "", 0, nil)
+	buildWordToPaths()
+
+	currentCandidates := []string{}
+	for i := candidates.GetItemCount() - 1; i >= 0; i-- {
+		main, _ := candidates.GetItemText(i)
+		currentCandidates = append(currentCandidates, main)
+	}
+	validCandidates := lo.Keys(wordToPaths)
+
+	words := lo.Intersect(currentCandidates, validCandidates)
+	sort.Strings(words)
+
+	// add the words as candidates
+	candidates.Clear()
+	for _, w := range words {
+		candidates.AddItem(w, w, 0, nil)
+	}
 	app.SetFocus(candidates)
 }
 
 func handleRestart() {
-	app.SetFocus(candidates)
-	candidates.Clear()
-
-	rows := strings.Split(textArea.GetText(), "\n")
-	grid := Grid{
-		rows:     rows,
-		searcher: dict.Search,
-	}
-	paths := grid.solve()
-
-	// group by word
-	wordToPaths = make(map[string][]Path)
-	for _, path := range paths {
-		wordToPaths[path.word] = append(wordToPaths[path.word], path)
-	}
+	buildWordToPaths()
 
 	// sort the words
 	var words []string
@@ -95,9 +93,11 @@ func handleRestart() {
 	sort.Strings(words)
 
 	// add the words as candidates
+	candidates.Clear()
 	for _, w := range words {
 		candidates.AddItem(w, w, 0, nil)
 	}
+	app.SetFocus(candidates)
 }
 
 func handleCandidateSelected(i int, main, secondary string, r rune) {
@@ -111,4 +111,19 @@ func handleCandidateChanged(i int, main, secondary string, r rune) {
 	})
 	allPaths := strings.Join(steps, "\n")
 	paths.SetText(allPaths)
+}
+
+func buildWordToPaths() {
+	rows := strings.Split(textArea.GetText(), "\n")
+	grid := Grid{
+		rows:     rows,
+		searcher: dict.Search,
+	}
+	paths := grid.solve()
+
+	// group by word
+	wordToPaths = make(map[string][]Path)
+	for _, path := range paths {
+		wordToPaths[path.word] = append(wordToPaths[path.word], path)
+	}
 }
