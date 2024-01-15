@@ -9,7 +9,7 @@ import (
 func main() {
 	fmt.Printf("Need to load tui\n")
 	minLen := flag.Int("min", 4, "Minimum word length")
-	maxLen := flag.Int("max", 10, "Maximum word length")
+	maxLen := flag.Int("max", 15, "Maximum word length")
 	dictFile := flag.String("dict", "/usr/share/dict/words", "Dictionary file")
 	flag.Parse()
 	fmt.Printf("Loading dictionary from %s, min len %d, max len %d\n", *dictFile, *minLen, *maxLen)
