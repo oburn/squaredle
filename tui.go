@@ -9,121 +9,132 @@ import (
 	"github.com/samber/lo"
 )
 
-var app = tview.NewApplication()
-var textArea = tview.NewTextArea()
-var applyButton = tview.NewButton("Apply")
-var restartButton = tview.NewButton("Restart")
-var candidates = tview.NewList()
-var paths = tview.NewTextView()
-
-var dict *Dict
-var wordToPaths map[string][]Path
+type tuiContext struct {
+	dict        *Dict
+	wordToPaths map[string][]Path
+	app         *tview.Application
+	textArea    *tview.TextArea
+	candidates  *tview.List
+	paths       *tview.TextView
+}
 
 func launch(useDict *Dict) {
-	dict = useDict // TODO find better way
+	myctx := tuiContext{
+		dict:       useDict,
+		app:        tview.NewApplication(),
+		textArea:   tview.NewTextArea(),
+		candidates: tview.NewList(),
+		paths:      tview.NewTextView(),
+	}
 
 	//textArea.SetPlaceholder("Enter...")
-	textArea.SetText("atvo\ntain\nonon\ntnic", true)
-	textArea.SetBorder(true)
-	textArea.SetTitle("Letters")
-	textArea.SetDisabled(false)
+	myctx.textArea.SetText("atvo\ntain\nonon\ntnic", true)
+	myctx.textArea.SetBorder(true)
+	myctx.textArea.SetTitle("Letters")
+	myctx.textArea.SetDisabled(false)
 
+	applyButton := tview.NewButton("Apply")
 	applyButton.SetBorder(true)
-	applyButton.SetSelectedFunc(handleApply)
+	applyButton.SetSelectedFunc(func() { myctx.handleApply() })
+
+	restartButton := tview.NewButton("Restart")
 	restartButton.SetBorder(true)
-	restartButton.SetSelectedFunc(handleRestart)
+	restartButton.SetSelectedFunc(func() { myctx.handleRestart() })
 
 	leftCol := tview.NewFlex()
 	leftCol.SetDirection(tview.FlexRow)
-	leftCol.AddItem(textArea, 0, 1, false)
+	leftCol.AddItem(myctx.textArea, 0, 1, false)
 	leftCol.AddItem(applyButton, 3, 1, false)
 	leftCol.AddItem(restartButton, 3, 1, false)
 
-	candidates.SetTitle("Candidates")
-	candidates.SetBorder(true)
-	candidates.ShowSecondaryText(false)
-	candidates.SetSelectedFunc(handleCandidateSelected)
-	candidates.SetChangedFunc(handleCandidateChanged)
+	myctx.candidates.SetTitle("Candidates")
+	myctx.candidates.SetBorder(true)
+	myctx.candidates.ShowSecondaryText(false)
+	myctx.candidates.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
+		myctx.handleCandidateSelected()
+	})
+	myctx.candidates.SetChangedFunc(func(index int, main, secondary string, shortcut rune) {
+		myctx.handleCandidateChanged(main)
+	})
 
-	paths.SetTitle("Paths")
-	paths.SetBorder(true)
+	myctx.paths.SetTitle("Paths")
+	myctx.paths.SetBorder(true)
 
 	rightCol := tview.NewFlex()
 	rightCol.SetDirection(tview.FlexRow)
-	rightCol.AddItem(candidates, 0, 1, false)
-	rightCol.AddItem(paths, 6, 1, false)
+	rightCol.AddItem(myctx.candidates, 0, 1, false)
+	rightCol.AddItem(myctx.paths, 6, 1, false)
 
 	flex := tview.NewFlex().
 		AddItem(leftCol, 0, 1, false).
 		AddItem(rightCol, 0, 2, false)
-	if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(textArea).Run(); err != nil {
+	if err := myctx.app.SetRoot(flex, true).EnableMouse(true).SetFocus(myctx.textArea).Run(); err != nil {
 		panic(err)
 	}
 }
 
-func handleApply() {
-	buildWordToPaths()
+func (ctx *tuiContext) handleApply() {
+	ctx.buildWordToPaths()
 
 	currentCandidates := []string{}
-	for i := candidates.GetItemCount() - 1; i >= 0; i-- {
-		main, _ := candidates.GetItemText(i)
+	for i := ctx.candidates.GetItemCount() - 1; i >= 0; i-- {
+		main, _ := ctx.candidates.GetItemText(i)
 		currentCandidates = append(currentCandidates, main)
 	}
-	validCandidates := lo.Keys(wordToPaths)
+	validCandidates := lo.Keys(ctx.wordToPaths)
 
 	words := lo.Intersect(currentCandidates, validCandidates)
 	sort.Strings(words)
 
 	// add the words as candidates
-	candidates.Clear()
+	ctx.candidates.Clear()
 	for _, w := range words {
-		candidates.AddItem(w, w, 0, nil)
+		ctx.candidates.AddItem(w, w, 0, nil)
 	}
-	app.SetFocus(candidates)
+	ctx.app.SetFocus(ctx.candidates)
 }
 
-func handleRestart() {
-	buildWordToPaths()
+func (ctx *tuiContext) handleRestart() {
+	ctx.buildWordToPaths()
 
 	// sort the words
 	var words []string
-	for k := range wordToPaths {
+	for k := range ctx.wordToPaths {
 		words = append(words, k)
 	}
 	sort.Strings(words)
 
 	// add the words as candidates
-	candidates.Clear()
+	ctx.candidates.Clear()
 	for _, w := range words {
-		candidates.AddItem(w, w, 0, nil)
+		ctx.candidates.AddItem(w, w, 0, nil)
 	}
-	app.SetFocus(candidates)
+	ctx.app.SetFocus(ctx.candidates)
 }
 
-func handleCandidateSelected(i int, main, secondary string, r rune) {
-	paths.SetText(fmt.Sprintf("%d - %s", i, main))
-	candidates.RemoveItem(i)
+func (ctx *tuiContext) handleCandidateSelected() {
+	ctx.candidates.RemoveItem(ctx.candidates.GetCurrentItem())
 }
 
-func handleCandidateChanged(i int, main, secondary string, r rune) {
-	steps := lo.Map(wordToPaths[main], func(item Path, i int) string {
+func (ctx *tuiContext) handleCandidateChanged(main string) {
+	steps := lo.Map(ctx.wordToPaths[main], func(item Path, i int) string {
 		return fmt.Sprintf("%v", item.steps)
 	})
 	allPaths := strings.Join(steps, "\n")
-	paths.SetText(allPaths)
+	ctx.paths.SetText(allPaths)
 }
 
-func buildWordToPaths() {
-	rows := strings.Split(textArea.GetText(), "\n")
+func (ctx *tuiContext) buildWordToPaths() {
+	rows := strings.Split(ctx.textArea.GetText(), "\n")
 	grid := Grid{
 		rows:     rows,
-		searcher: dict.Search,
+		searcher: ctx.dict.Search,
 	}
 	paths := grid.solve()
 
 	// group by word
-	wordToPaths = make(map[string][]Path)
+	ctx.wordToPaths = make(map[string][]Path)
 	for _, path := range paths {
-		wordToPaths[path.word] = append(wordToPaths[path.word], path)
+		ctx.wordToPaths[path.word] = append(ctx.wordToPaths[path.word], path)
 	}
 }
