@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/rivo/tview"
+	"github.com/samber/lo"
 )
 
 var app = tview.NewApplication()
@@ -13,8 +16,14 @@ var restartButton = tview.NewButton("Restart")
 var candidates = tview.NewList()
 var paths = tview.NewTextView()
 
-func launch() {
-	textArea.SetPlaceholder("Enter...")
+var dict *Dict
+var wordToPaths map[string][]Path
+
+func launch(useDict *Dict) {
+	dict = useDict // TODO find better way
+
+	//textArea.SetPlaceholder("Enter...")
+	textArea.SetText("atvo\ntain\nonon\ntnic", true)
 	textArea.SetBorder(true)
 	textArea.SetTitle("Letters")
 	textArea.SetDisabled(false)
@@ -62,9 +71,33 @@ func handleApply() {
 }
 
 func handleRestart() {
-	textArea.SetText("Restarted!", true)
-	paths.SetText("Coming")
 	app.SetFocus(candidates)
+	candidates.Clear()
+
+	rows := strings.Split(textArea.GetText(), "\n")
+	grid := Grid{
+		rows:     rows,
+		searcher: dict.Search,
+	}
+	paths := grid.solve()
+
+	// group by word
+	wordToPaths = make(map[string][]Path)
+	for _, path := range paths {
+		wordToPaths[path.word] = append(wordToPaths[path.word], path)
+	}
+
+	// sort the words
+	var words []string
+	for k := range wordToPaths {
+		words = append(words, k)
+	}
+	sort.Strings(words)
+
+	// add the words as candidates
+	for _, w := range words {
+		candidates.AddItem(w, w, 0, nil)
+	}
 }
 
 func handleCandidateSelected(i int, main, secondary string, r rune) {
@@ -73,5 +106,9 @@ func handleCandidateSelected(i int, main, secondary string, r rune) {
 }
 
 func handleCandidateChanged(i int, main, secondary string, r rune) {
-	paths.SetText(fmt.Sprintf("Paths for %d - %s", i, main))
+	steps := lo.Map(wordToPaths[main], func(item Path, i int) string {
+		return fmt.Sprintf("%v", item.steps)
+	})
+	allPaths := strings.Join(steps, "\n")
+	paths.SetText(allPaths)
 }
