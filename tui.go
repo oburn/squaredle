@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/rivo/tview"
 )
 
@@ -18,13 +20,9 @@ func launch() {
 	textArea.SetDisabled(false)
 
 	applyButton.SetBorder(true)
-	applyButton.SetSelectedFunc(func() {
-		textArea.SetText("Apply clicked!", true)
-	})
+	applyButton.SetSelectedFunc(handleApply)
 	restartButton.SetBorder(true)
-	restartButton.SetSelectedFunc(func() {
-		textArea.SetText("Restart clicked!", true)
-	})
+	restartButton.SetSelectedFunc(handleRestart)
 
 	leftCol := tview.NewFlex()
 	leftCol.SetDirection(tview.FlexRow)
@@ -34,6 +32,9 @@ func launch() {
 
 	candidates.SetTitle("Candidates")
 	candidates.SetBorder(true)
+	candidates.ShowSecondaryText(false)
+	candidates.SetSelectedFunc(handleCandidateSelected)
+	candidates.SetChangedFunc(handleCandidateChanged)
 
 	paths.SetTitle("Paths")
 	paths.SetBorder(true)
@@ -49,4 +50,28 @@ func launch() {
 	if err := app.SetRoot(flex, true).EnableMouse(true).SetFocus(textArea).Run(); err != nil {
 		panic(err)
 	}
+}
+
+var counter = 0
+
+func handleApply() {
+	textArea.SetText("Apply clicked!", true)
+	counter++
+	candidates.AddItem(fmt.Sprintf("clicked %d", counter), "", 0, nil)
+	app.SetFocus(candidates)
+}
+
+func handleRestart() {
+	textArea.SetText("Restarted!", true)
+	paths.SetText("Coming")
+	app.SetFocus(candidates)
+}
+
+func handleCandidateSelected(i int, main, secondary string, r rune) {
+	paths.SetText(fmt.Sprintf("%d - %s", i, main))
+	candidates.RemoveItem(i)
+}
+
+func handleCandidateChanged(i int, main, secondary string, r rune) {
+	paths.SetText(fmt.Sprintf("Paths for %d - %s", i, main))
 }
