@@ -7,6 +7,11 @@ import (
 )
 
 func main() {
+	fmt.Printf("Need to load tui\n")
+	launch()
+}
+
+func Main2() {
 	minLen := flag.Int("min", 4, "Minimum word length")
 	maxLen := flag.Int("max", 10, "Maximum word length")
 	dictFile := flag.String("dict", "/usr/share/dict/words", "Dictionary file")
