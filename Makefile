@@ -19,6 +19,3 @@ test:	## Run all tests
 
 tui:	## Launch the terminal UI
 	go run . -tui
-
-updates:	## search for updates
-	echo need to do it
