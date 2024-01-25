@@ -35,3 +35,6 @@ $(jar_file): src/main/java/lantern/*.java
 
 run: $(jar_file)	## Run the app
 	java -jar $(jar_file)
+
+flame: $(jar_file)	## Generate a flamegraph
+	jbang --javaagent=ap-loader@jvm-profiling-tools/ap-loader=start,event=cpu,file=profile.html -m lantern.App $(jar_file)
