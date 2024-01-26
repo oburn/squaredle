@@ -28,6 +28,7 @@
       <groupId>org.eclipse.collections</groupId>
       <artifactId>eclipse-collections</artifactId>
       <version>11.1.0</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.googlecode.lanterna</groupId>

@@ -30,7 +30,7 @@ clean:	## Clean up
 watch-java-test:	## Reruns Java tests when files change
 	fswatch src | while read file; do clear; mvn --offline --batch-mode test; done
 
-$(jar_file): src/main/java/lantern/*.java
+$(jar_file): src/main/java/lantern/*.java pom.xml
 	mvn test assembly:single
 
 run: $(jar_file)	## Run the app

@@ -1,7 +1,7 @@
 package lantern;
 
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 
 record Pt(int x, int y) {
     ImmutableList<Pt> adjacent(int width, int height) {

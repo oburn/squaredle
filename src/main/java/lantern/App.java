@@ -7,8 +7,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.factory.Multimaps.ImmutableMultimaps;
+import org.eclipse.collections.api.factory.Lists;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
