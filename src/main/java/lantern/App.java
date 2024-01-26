@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.factory.Multimaps.ImmutableMultimaps;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
@@ -127,7 +128,7 @@ public class App {
         buildWordToPaths();
 
         candidateListBox.clearItems();
-        wordToPaths.forEachKey(w -> {
+        wordToPaths.keySet().toSortedList().forEach(w -> {
             candidateListBox.addItem(w, () -> {
                 handleCandidate();
             });
@@ -146,17 +147,17 @@ public class App {
                 .filter(l -> l.length() > 0));
 
         var soln = solver.solve(rows);
-        wordToPaths =  soln.groupBy(v -> v.word());
+        wordToPaths = soln.groupBy(v -> v.word());
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void mainTime(String[] args) throws IOException {
         var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15);
         var soln = solver.solve(Lists.immutable.of("titd", "aprz", "rlaw", "blyv"));
         System.out.printf("Solved, found %d words\n", soln.size());
         // soln.stream().forEach(wp -> System.out.println(wp.word()));
     }
 
-    public static void mainTui(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
         var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15);
         var app = new App(solver);
         app.display();
