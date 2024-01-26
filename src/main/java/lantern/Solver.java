@@ -3,36 +3,34 @@ package lantern;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.impl.factory.Lists;
 
 public class Solver {
     static record SearchResult(boolean exactMatch, boolean partialMatch) {
     }
 
-    private final List<String> words;
+    private final ImmutableList<String> words;
 
-    private Solver(List<String> words) {
+    private Solver(ImmutableList<String> words) {
         this.words = words;
     }
 
     static Solver load(Path p, int minLen, int maxLen) throws IOException {
-        var words = Files.lines(p)
+        var wordsStream = Files.lines(p)
                 .filter(l -> l.length() >= minLen)
                 .filter(l -> l.length() <= maxLen)
-                .filter(l -> l.equals(l.toLowerCase()))
-                .toList();
-        return new Solver(Collections.unmodifiableList(words));
+                .filter(l -> l.equals(l.toLowerCase()));
+        return new Solver(Lists.immutable.fromStream(wordsStream));
     }
 
-    List<WordPath> wordsFrom(WordPath wp, List<String> rows) {
-        var result = new ArrayList<WordPath>();
-
+    ImmutableList<WordPath> wordsFrom(WordPath wp, ImmutableList<String> rows) {
         if (wp.word().length() > 15) { // love a magic constant
-            return result;
+            return Lists.immutable.empty();
         }
 
+        var result = Lists.mutable.<WordPath>empty();
         var searchResult = search(wp.word());
         if (searchResult.exactMatch()) {
             result.add(wp);
@@ -40,30 +38,29 @@ public class Solver {
 
         if (searchResult.partialMatch()) {
             wp.steps().getLast().adjacent(rows.getFirst().length(), rows.size())
-                    .stream()
-                    .filter(p -> !wp.visited(p))
+                    .select(p -> !wp.visited(p))
                     .forEach(p -> {
                         var nextPath = wp.addStep(p, rows.get(p.y()).charAt(p.x()));
                         var extraWords = wordsFrom(nextPath, rows);
-                        result.addAll(extraWords);
+                        result.withAll(extraWords);
                     });
             ;
         }
 
-        return Collections.unmodifiableList(result);
+        return result.toImmutableList();
     }
 
-    List<WordPath> solve(List<String> rows) {
-        var result = new ArrayList<WordPath>();
+    ImmutableList<WordPath> solve(ImmutableList<String> rows) {
+        var result = Lists.mutable.<WordPath>empty();
 
         for (int y = 0; y < rows.size(); y++) {
             var row = rows.get(y);
             for (int x = 0; x < row.length(); x++) {
-                result.addAll(wordsFrom(new WordPath(List.of(new Pt(x, y)), "" + row.charAt(x)), rows));
+                result.withAll(wordsFrom(new WordPath(Lists.immutable.of(new Pt(x, y)), "" + row.charAt(x)), rows));
             }
         }
 
-        return Collections.unmodifiableList(result);
+        return result.toImmutableList();
     }
 
     SearchResult search(String candidate) {
@@ -85,7 +82,7 @@ public class Solver {
         return new SearchResult(exactMatch, partialMatch);
     }
 
-    public List<String> getWords() {
+    public ImmutableList<String> getWords() {
         return words;
     }
 }

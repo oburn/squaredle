@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Stream;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +23,7 @@ public class SolverTest {
     @Test
     void testSolve() throws IOException {
         var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 9);
-        var xxx = solver.solve(List.of("abcd", "efgh", "ijkl", "mnop"));
+        var xxx = solver.solve(Lists.immutable.of("abcd", "efgh", "ijkl", "mnop"));
         assertThat(xxx).hasSize(10);
 
     }

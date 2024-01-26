@@ -1,11 +1,11 @@
 package lantern;
 
-import java.util.List;
-import java.util.stream.Stream;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.impl.factory.Lists;
 
 record Pt(int x, int y) {
-    List<Pt> adjacent(int width, int height) {
-        return Stream.of(
+    ImmutableList<Pt> adjacent(int width, int height) {
+        return Lists.immutable.of(
                 new Pt(x - 1, y - 1),
                 new Pt(x, y - 1),
                 new Pt(x + 1, y - 1),
@@ -14,7 +14,6 @@ record Pt(int x, int y) {
                 new Pt(x, y + 1),
                 new Pt(x - 1, y + 1),
                 new Pt(x - 1, y)) //
-                .filter(p -> p.x >= 0 && p.x < width && p.y >= 0 && p.y < height)
-                .toList();
+                .select(p -> p.x >= 0 && p.x < width && p.y >= 0 && p.y < height);
     }
 }

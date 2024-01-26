@@ -5,11 +5,9 @@ import static java.util.Objects.requireNonNull;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
+
+import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
+import org.eclipse.collections.impl.factory.Lists;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
@@ -38,7 +36,7 @@ public class App {
     private final ActionListBox candidateListBox;
     private final TextBox pathsBox;
     private final Solver solver;
-    private final Map<String, List<WordPath>> wordToPaths = new TreeMap<>();
+    private ImmutableListMultimap<String, WordPath>  wordToPaths;
 
     public App(Solver solver) throws IOException {
         this.solver = requireNonNull(solver);
@@ -129,7 +127,7 @@ public class App {
         buildWordToPaths();
 
         candidateListBox.clearItems();
-        wordToPaths.keySet().stream().forEach(w -> {
+        wordToPaths.forEachKey(w -> {
             candidateListBox.addItem(w, () -> {
                 handleCandidate();
             });
@@ -142,19 +140,23 @@ public class App {
     }
 
     private void buildWordToPaths() {
-        var rows = Arrays.stream(lettersBox.getText().split("\\n"))
+        var rows = Lists.immutable.fromStream(
+            Arrays.stream(lettersBox.getText().split("\\n"))
                 .map(l -> l.trim())
-                .filter(l -> l.length() > 0)
-                .toList();
+                .filter(l -> l.length() > 0));
 
-        wordToPaths.clear();
-        wordToPaths.putAll(
-                solver.solve(rows)
-                        .stream()
-                        .collect(Collectors.groupingBy(wp -> wp.word())));
+        var soln = solver.solve(rows);
+        wordToPaths =  soln.groupBy(v -> v.word());
     }
 
     public static void main(String[] args) throws IOException {
+        var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15);
+        var soln = solver.solve(Lists.immutable.of("titd", "aprz", "rlaw", "blyv"));
+        System.out.printf("Solved, found %d words\n", soln.size());
+        // soln.stream().forEach(wp -> System.out.println(wp.word()));
+    }
+
+    public static void mainTui(String[] args) throws IOException {
         var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15);
         var app = new App(solver);
         app.display();

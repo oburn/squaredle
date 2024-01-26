@@ -7,7 +7,7 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 upgrade-list:	## List available upgrades
-	go list -u -m all
+	#go list -u -m all
 	mvn versions:display-plugin-updates
 	mvn versions:display-dependency-updates
 
@@ -34,7 +34,7 @@ $(jar_file): src/main/java/lantern/*.java
 	mvn test assembly:single
 
 run: $(jar_file)	## Run the app
-	java -jar $(jar_file)
+	time java -jar $(jar_file)
 
 flame: $(jar_file)	## Generate a flamegraph
 	jbang --javaagent=ap-loader@jvm-profiling-tools/ap-loader=start,event=cpu,file=profile.html -m lantern.App $(jar_file)

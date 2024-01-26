@@ -41,6 +41,25 @@ Mock up:
 +----------------------------+
 #+END_EXAMPLE
 
+* Sample input
+#+BEGIN_EXAMPLE
+titd aprz rlaw blyv
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+titd
+aprz
+rlaw
+blyv
+#+END_EXAMPLE
+
+| Method                    | Time (secs) |
+|---------------------------+-------------|
+| Java + java.util          |        2.63 |
+| Java + Eclipse Collection |        2.58 |
+| Golang                    |        1.94 |
+
+
 * Emacs Configuration
 # Local Variables:
 # org-confirm-babel-evaluate: nil

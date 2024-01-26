@@ -1,17 +1,13 @@
 package lantern;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.eclipse.collections.api.list.ImmutableList;
 
-public record WordPath(List<Pt> steps, String word) {
+public record WordPath(ImmutableList<Pt> steps, String word) {
     boolean visited(Pt pt) {
         return steps.contains(pt);
     }
 
     WordPath addStep(Pt pt, char ch) {
-        var cloneSteps = new ArrayList<Pt>(steps);
-        cloneSteps.add(pt);
-        return new WordPath(Collections.unmodifiableList(cloneSteps), word + ch);
+        return new WordPath(steps.newWith(pt), word + ch);
     }
 }
