@@ -1,4 +1,4 @@
-golang 1.22.0
+golang 1.22.1
 java temurin-21.0.2+13.0.LTS
 maven 3.9.6
-jbang 0.114.0
+jbang 0.115.0
