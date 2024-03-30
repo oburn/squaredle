@@ -26,7 +26,7 @@ public class Solver {
     }
 
     ImmutableList<WordPath> wordsFrom(WordPath wp, ImmutableList<String> rows) {
-        if (wp.word().length() > 15) { // love a magic constant
+        if (wp.word().length() > 20) { // love a magic constant
             return Lists.immutable.empty();
         }
 
