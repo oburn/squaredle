@@ -72,12 +72,8 @@ public class App {
     Border buildActionsPanel() {
         var result = new Panel(new LinearLayout(Direction.HORIZONTAL));
 
-        var applyButton = new Button("Apply", () -> {
-            handleApply();
-        });
-        var restartButton = new Button("Restart", () -> {
-            handleRestart();
-        });
+        var applyButton = new Button("Apply", this::handleApply);
+        var restartButton = new Button("Restart", this::handleRestart);
 
         result.addComponent(applyButton);
         result.addComponent(restartButton);
@@ -127,11 +123,7 @@ public class App {
         buildWordToPaths();
 
         candidateListBox.clearItems();
-        wordToPaths.keySet().toSortedList().forEach(w -> {
-            candidateListBox.addItem(w, () -> {
-                handleCandidate();
-            });
-        });
+        wordToPaths.keySet().toSortedList().forEach(w -> candidateListBox.addItem(w, this::handleCandidate));
     }
 
     void handleCandidate() {
@@ -142,11 +134,11 @@ public class App {
     private void buildWordToPaths() {
         var rows = Lists.immutable.fromStream(
             Arrays.stream(lettersBox.getText().split("\\n"))
-                .map(l -> l.trim())
-                .filter(l -> l.length() > 0));
+                .map(String::trim)
+                .filter(l -> !l.isEmpty()));
 
         var soln = solver.solve(rows);
-        wordToPaths = soln.groupBy(v -> v.word());
+        wordToPaths = soln.groupBy(WordPath::word);
     }
 
     public static void mainTime(String[] args) throws IOException {

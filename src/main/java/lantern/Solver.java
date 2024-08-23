@@ -9,7 +9,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.factory.Lists;
 
 public class Solver {
-    static record SearchResult(boolean exactMatch, boolean partialMatch) {
+    record SearchResult(boolean exactMatch, boolean partialMatch) {
     }
 
     private final ImmutableList<String> words;
@@ -46,7 +46,6 @@ public class Solver {
                         var extraWords = wordsFrom(nextPath, rows);
                         result.withAll(extraWords);
                     });
-            ;
         }
 
         return result.toImmutableList();
