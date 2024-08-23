@@ -3,6 +3,7 @@ package lantern;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.factory.Lists;
@@ -18,11 +19,12 @@ public class Solver {
     }
 
     static Solver load(Path p, int minLen, int maxLen) throws IOException {
-        var wordsStream = Files.lines(p)
+        try (var wordsStream = Files.lines(p)
                 .filter(l -> l.length() >= minLen)
                 .filter(l -> l.length() <= maxLen)
-                .filter(l -> l.equals(l.toLowerCase()));
-        return new Solver(Lists.immutable.fromStream(wordsStream));
+                .filter(l -> l.equals(l.toLowerCase(Locale.ENGLISH)))) {
+            return new Solver(Lists.immutable.fromStream(wordsStream));
+        }
     }
 
     ImmutableList<WordPath> wordsFrom(WordPath wp, ImmutableList<String> rows) {
