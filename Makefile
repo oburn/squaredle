@@ -19,7 +19,8 @@ tidy:	## Tidy up the modules
 	go mod tidy
 
 test:	## Run all tests
-	go test -v
+	#go test -v
+	mvn test
 
 tui:	## Launch the terminal UI
 	go run . -tui
