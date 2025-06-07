@@ -1,0 +1,47 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  JAR_FILE: target/tui-lanterna-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+tasks:
+  default:
+    cmds:
+      - task -a
+    silent: true
+    desc: Lists the available tasks
+
+  clean:
+    desc: Clean everything
+    cmds:
+      - mvn clean
+
+  test:
+    desc: Run the tests
+    sources:
+      - "src/**/*"
+    cmds:
+      - mvn test --offline
+
+  gen-jar:
+    desc: Builds the executable JAR
+    cmds:
+      - mvn compile assembly:single
+    sources:
+      - pom.xml
+      - src/main/java/**/*.java
+    generates:
+      - "{{.JAR_FILE}}"
+
+  run:
+    deps: [gen-jar]
+    desc: Run the UI
+    cmds:
+      - java -jar {{.JAR_FILE}}
+    
+  upgrade-list:
+    desc: Report on available upgrades
+    cmds:
+      - mvn versions:display-plugin-updates
+      - mvn versions:display-dependency-updates
