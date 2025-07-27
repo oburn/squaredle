@@ -22,7 +22,7 @@ tasks:
     sources:
       - "src/**/*"
     cmds:
-      - mvn test --offline
+      - mvn test
 
   gen-jar:
     desc: Builds the executable JAR
