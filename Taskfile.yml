@@ -19,8 +19,6 @@ tasks:
 
   test:
     desc: Run the tests
-    sources:
-      - "src/**/*"
     cmds:
       - mvn test
 
