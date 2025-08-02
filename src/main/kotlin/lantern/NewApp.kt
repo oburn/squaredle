@@ -8,15 +8,12 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
-import org.eclipse.collections.api.block.procedure.Procedure
-import org.eclipse.collections.api.factory.Lists
-import org.eclipse.collections.api.multimap.list.ImmutableListMultimap
 import java.io.IOException
 import java.nio.file.Paths
 import java.util.*
 
-class NewApp(private val solver: Solver) {
-    private var wordToPaths: ImmutableListMultimap<String, WordPath>? = null
+class NewApp(private val solver: NewSolver) {
+    private var wordToPaths: Map<String, List<NewWordPath>>? = null
     private val terminal: Terminal = DefaultTerminalFactory().createTerminal()
     private val screen: Screen = TerminalScreen(terminal)
     private val lettersBox: TextBox = TextBox(
@@ -31,6 +28,7 @@ class NewApp(private val solver: Solver) {
     private val pathsBox: TextBox = TextBox(
         TerminalSize(terminal.terminalSize.columns - 2, 4)
     )
+
     init {
         pathsBox.setReadOnly(true)
         pathsBox.setEnabled(false)
@@ -57,8 +55,8 @@ class NewApp(private val solver: Solver) {
     fun buildActionsPanel(): Border? {
         val result = Panel(LinearLayout(Direction.HORIZONTAL))
 
-        val applyButton = Button("Apply", Runnable { this.handleApply() })
-        val restartButton = Button("Restart", Runnable { this.handleRestart() })
+        val applyButton = Button("Apply") { this.handleApply() }
+        val restartButton = Button("Restart") { this.handleRestart() }
 
         result.addComponent(applyButton)
         result.addComponent(restartButton)
@@ -82,8 +80,10 @@ class NewApp(private val solver: Solver) {
         buildWordToPaths()
 
         candidateListBox.clearItems()
-        wordToPaths!!.keySet().toSortedList()
-            .forEach(Procedure { w: String? -> candidateListBox.addItem(w, Runnable { this.handleCandidate() }) })
+        wordToPaths!!.keys.sorted()
+            .forEach { w ->
+                candidateListBox.addItem(w) { this.handleCandidate() }
+            }
     }
 
     fun handleCandidate() {
@@ -92,14 +92,11 @@ class NewApp(private val solver: Solver) {
     }
 
     private fun buildWordToPaths() {
-        val rows = Lists.immutable.fromStream<String?>(
-            Arrays.stream<String>(lettersBox.getText().split("\\n".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray())
-                .map<String?> { obj: String? -> obj!!.trim { it <= ' ' } }
-                .filter { l: String? -> !l!!.isEmpty() })
-
+        val rows = lettersBox.text.split("\\n".toRegex())
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
         val soln = solver.solve(rows)
-        wordToPaths = soln.groupBy<String?>(WordPath::word)
+        wordToPaths = soln.groupBy { it.word }
     }
 
     @Throws(IOException::class)
@@ -132,7 +129,7 @@ class NewApp(private val solver: Solver) {
 }
 
 fun main(args: Array<String>) {
-    val solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15)
+    val solver = loadWords(Paths.get("/usr/share/dict/words"), 4, 15)
     val app = NewApp(solver)
     app.display()
 }
