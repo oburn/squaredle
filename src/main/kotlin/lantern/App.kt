@@ -9,7 +9,6 @@ import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
 import java.io.IOException
-import java.nio.file.Paths
 import java.util.*
 
 class App(private val solver: Solver) {
@@ -126,10 +125,4 @@ class App(private val solver: Solver) {
         )
         gui.addWindowAndWait(window)
     }
-}
-
-fun main(args: Array<String>) {
-    val solver = loadWords(Paths.get("/usr/share/dict/words"), 4, 15)
-    val app = App(solver)
-    app.display()
 }

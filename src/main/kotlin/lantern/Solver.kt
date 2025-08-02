@@ -1,9 +1,5 @@
 package lantern
 
-import java.nio.file.Path
-import java.util.Locale
-import kotlin.io.path.readLines
-
 data class Solver(val words: List<String>) {
 
     fun solve(rows: List<String>): List<WordPath> {
@@ -61,12 +57,4 @@ data class Solver(val words: List<String>) {
 
         return SearchResult(exactMatch, partialMatch)
     }
-}
-
-fun loadWords(path: Path, minLen: Int, maxLen: Int): Solver {
-    val words = path.readLines()
-        .filter { it.length >= minLen }
-        .filter { it.length <= maxLen }
-        .filter { it == it.lowercase(Locale.ENGLISH) }
-    return Solver(words)
 }
