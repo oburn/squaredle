@@ -141,13 +141,6 @@ public class App {
         wordToPaths = soln.groupBy(WordPath::word);
     }
 
-    public static void mainTime(String[] args) throws IOException {
-        var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15);
-        var soln = solver.solve(Lists.immutable.of("titd", "aprz", "rlaw", "blyv"));
-        System.out.printf("Solved, found %d words\n", soln.size());
-        // soln.stream().forEach(wp -> System.out.println(wp.word()));
-    }
-
     public static void main(String[] args) throws IOException {
         var solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15);
         var app = new App(solver);
