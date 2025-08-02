@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class NewSolverTest {
+class SolverTest {
     val samplePath: Path = Paths.get("src", "test", "resources", "sample.dict")
 
     @Test

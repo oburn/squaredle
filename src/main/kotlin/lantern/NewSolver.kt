@@ -12,7 +12,7 @@ data class NewSolver(val words: List<String>) {
         for (y in 0..<rows.size) {
             val row = rows.get(y)
             for (x in 0..<row.length) {
-                result.addAll(wordsFrom(NewWordPath(listOf(NewPt(x, y)), "" + row.get(x)), rows))
+                result.addAll(wordsFrom(NewWordPath(listOf(Pt(x, y)), "" + row.get(x)), rows))
             }
         }
 
