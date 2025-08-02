@@ -16,7 +16,7 @@
         <kotlin.version>2.2.0</kotlin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <maven.version.ignore>(?i).*m\d+,.+-alpha.+,.+-beta.+,.+-rc\d+</maven.version.ignore>
+        <maven.version.ignore>(?i).*m\d+,(?i).+-alpha.+,(?i).+-beta.+,(?i).+-rc\d*</maven.version.ignore>
     </properties>
 
     <dependencies>
