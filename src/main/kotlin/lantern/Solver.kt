@@ -4,27 +4,27 @@ import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.readLines
 
-data class NewSolver(val words: List<String>) {
+data class Solver(val words: List<String>) {
 
-    fun solve(rows: List<String>): List<NewWordPath> {
-        val result = mutableListOf<NewWordPath>()
+    fun solve(rows: List<String>): List<WordPath> {
+        val result = mutableListOf<WordPath>()
 
         for (y in 0..<rows.size) {
             val row = rows.get(y)
             for (x in 0..<row.length) {
-                result.addAll(wordsFrom(NewWordPath(listOf(Pt(x, y)), "" + row.get(x)), rows))
+                result.addAll(wordsFrom(WordPath(listOf(Pt(x, y)), "" + row.get(x)), rows))
             }
         }
 
         return result.toList()
     }
 
-    fun wordsFrom(wp: NewWordPath, rows: List<String>): List<NewWordPath> {
+    fun wordsFrom(wp: WordPath, rows: List<String>): List<WordPath> {
         if (wp.word.length > 20) { // love a magic constant
             return emptyList()
         }
 
-        val result = mutableListOf<NewWordPath>()
+        val result = mutableListOf<WordPath>()
         val searchResult = search(wp.word)
         if (searchResult.exactMatch) {
             result.add(wp)
@@ -43,7 +43,7 @@ data class NewSolver(val words: List<String>) {
         return result.toList()
     }
 
-    fun search(candidate: String): NewSearchResult {
+    fun search(candidate: String): SearchResult {
         var exactMatch = false
         var partialMatch = false
 
@@ -59,14 +59,14 @@ data class NewSolver(val words: List<String>) {
             }
         }
 
-        return NewSearchResult(exactMatch, partialMatch)
+        return SearchResult(exactMatch, partialMatch)
     }
 }
 
-fun loadWords(path: Path, minLen: Int, maxLen: Int): NewSolver {
+fun loadWords(path: Path, minLen: Int, maxLen: Int): Solver {
     val words = path.readLines()
         .filter { it.length >= minLen }
         .filter { it.length <= maxLen }
         .filter { it == it.lowercase(Locale.ENGLISH) }
-    return NewSolver(words)
+    return Solver(words)
 }

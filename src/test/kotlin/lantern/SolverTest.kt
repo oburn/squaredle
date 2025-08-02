@@ -34,13 +34,13 @@ class SolverTest {
     fun testSearch() {
         val dict = loadWords(samplePath, 4, 5)
         val got = dict.search("xx")
-        assertThat(got).isEqualTo(NewSearchResult(exactMatch = false, partialMatch = false))
+        assertThat(got).isEqualTo(SearchResult(exactMatch = false, partialMatch = false))
 
         listOf(
-            Pair("aa", NewSearchResult(exactMatch = false, partialMatch = true)),
-            Pair("ab", NewSearchResult(exactMatch = false, partialMatch = false)),
-            Pair("from", NewSearchResult(exactMatch = true, partialMatch = true)),
-            Pair("drive", NewSearchResult(exactMatch = true, partialMatch = false)),
+            Pair("aa", SearchResult(exactMatch = false, partialMatch = true)),
+            Pair("ab", SearchResult(exactMatch = false, partialMatch = false)),
+            Pair("from", SearchResult(exactMatch = true, partialMatch = true)),
+            Pair("drive", SearchResult(exactMatch = true, partialMatch = false)),
         )
             .forEach { pair ->
                 val got = dict.search(pair.first)

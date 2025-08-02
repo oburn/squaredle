@@ -12,8 +12,8 @@ import java.io.IOException
 import java.nio.file.Paths
 import java.util.*
 
-class NewApp(private val solver: NewSolver) {
-    private var wordToPaths: Map<String, List<NewWordPath>>? = null
+class App(private val solver: Solver) {
+    private var wordToPaths: Map<String, List<WordPath>>? = null
     private val terminal: Terminal = DefaultTerminalFactory().createTerminal()
     private val screen: Screen = TerminalScreen(terminal)
     private val lettersBox: TextBox = TextBox(
@@ -130,6 +130,6 @@ class NewApp(private val solver: NewSolver) {
 
 fun main(args: Array<String>) {
     val solver = loadWords(Paths.get("/usr/share/dict/words"), 4, 15)
-    val app = NewApp(solver)
+    val app = App(solver)
     app.display()
 }
