@@ -132,7 +132,6 @@ class NewApp(private val solver: Solver) {
 }
 
 fun main(args: Array<String>) {
-    println("And away")
     val solver = Solver.load(Paths.get("/usr/share/dict/words"), 4, 15)
     val app = NewApp(solver)
     app.display()
