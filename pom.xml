@@ -65,7 +65,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>lantern.App</mainClass>
+                            <mainClass>lantern.RunnerKt</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -76,7 +76,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>lantern.App</mainClass>
+                            <mainClass>lantern.RunnerKt</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
