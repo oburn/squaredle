@@ -8,8 +8,6 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.screen.TerminalScreen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
-import java.io.IOException
-import java.util.*
 
 class App(private val solver: Solver) {
     private var wordToPaths: Map<String, List<WordPath>>? = null
@@ -29,8 +27,8 @@ class App(private val solver: Solver) {
     )
 
     init {
-        pathsBox.setReadOnly(true)
-        pathsBox.setEnabled(false)
+        pathsBox.isReadOnly = true
+        pathsBox.isEnabled = false
     }
 
     fun buildPathsPanel(): Border? {
@@ -66,7 +64,7 @@ class App(private val solver: Solver) {
     fun handleApply() {
         buildWordToPaths()
 
-        for (i in candidateListBox.getItemCount() - 1 downTo 0) {
+        for (i in candidateListBox.itemCount - 1 downTo 0) {
             // ugly hack relying on toString of the Runnable being to word
             val word: String? = candidateListBox.getItemAt(i).toString()
             if (!wordToPaths!!.containsKey(word)) {
@@ -86,23 +84,22 @@ class App(private val solver: Solver) {
     }
 
     fun handleCandidate() {
-        pathsBox.setText("Need to handle: " + candidateListBox.getSelectedIndex())
-        candidateListBox.removeItem(candidateListBox.getSelectedIndex())
+        pathsBox.text = "Need to handle: " + candidateListBox.selectedIndex
+        candidateListBox.removeItem(candidateListBox.selectedIndex)
     }
 
     private fun buildWordToPaths() {
         val rows = lettersBox.text.split("\\n".toRegex())
             .map { it.trim() }
             .filter { it.isNotEmpty() }
-        val soln = solver.solve(rows)
-        wordToPaths = soln.groupBy { it.word }
+        val solution = solver.solve(rows)
+        wordToPaths = solution.groupBy { it.word }
     }
 
-    @Throws(IOException::class)
     fun display() {
         screen.startScreen()
         val window = BasicWindow("Solver")
-        window.setHints(Arrays.asList<Hint?>(Hint.FULL_SCREEN, Hint.NO_DECORATIONS))
+        window.setHints(listOf(Hint.FULL_SCREEN, Hint.NO_DECORATIONS))
 
         val lettersActionsPanel = Panel(LinearLayout(Direction.VERTICAL))
         lettersActionsPanel.addComponent(buildLettersPanel())
@@ -115,7 +112,7 @@ class App(private val solver: Solver) {
         val outerPanel = Panel(LinearLayout(Direction.VERTICAL))
         outerPanel.addComponent(lettersCandidatesActionsPanel)
         outerPanel.addComponent(buildPathsPanel())
-        window.setComponent(outerPanel)
+        window.component = outerPanel
 
         // Create gui and start gui
         val gui = MultiWindowTextGUI(
