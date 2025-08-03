@@ -10,7 +10,7 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
 
 class App(private val solver: Solver) {
-    private var wordToPaths: Map<String, List<WordPath>>? = null
+    private val knownSolutions: MutableSet<String> = mutableSetOf()
     private val terminal: Terminal = DefaultTerminalFactory().createTerminal()
     private val screen: Screen = TerminalScreen(terminal)
     private val lettersBox: TextBox =
@@ -35,11 +35,11 @@ class App(private val solver: Solver) {
     private val toggleGroupBy: CheckBoxList<String> =
         CheckBoxList<String>()
             .addItem("Group by len")
-            .addListener { itemIndex, checked -> handleToggling(checked) }
+            .addListener { itemIndex, checked -> updateCandidates() }
 
     private val maskBox: TextBox =
         TextBox(TerminalSize(18, 1))
-            .setTextChangeListener { newText, ignored -> handleMask(newText) }
+            .setTextChangeListener { newText, ignored -> updateCandidates() }
 
     private val debugBox: TextBox =
         TextBox(TerminalSize(terminal.terminalSize.columns - 2, 2))
@@ -99,12 +99,7 @@ class App(private val solver: Solver) {
     }
 
     fun updateCandidates() {
-        val rows = lettersBox.text.split('\n')
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-        val solution = solver.solve(rows)
-        val allWords = solution.map { it.word }.toSortedSet()
-        val untriedWords = allWords.subtract(historyWords())
+        val untriedWords = knownSolutions.subtract(historyWords())
 
         // Apply grouping
         val groupedWords = if (toggleGroupBy.isChecked(0)) {
@@ -124,32 +119,13 @@ class App(private val solver: Solver) {
     }
 
     fun handleApply() {
+        calculateSolutions()
         updateCandidates()
-//        debugBox.text = "History has ${historyWords().size} words"
-//        buildWordToPaths()
-//
-//        for (i in candidateListBox.itemCount - 1 downTo 0) {
-//            // ugly hack relying on toString of the Runnable being to word
-//            val word: String? = candidateListBox.getItemAt(i).toString()
-//            if (!wordToPaths!!.containsKey(word)) {
-//                candidateListBox.removeItem(i)
-//            }
-//        }
     }
 
     fun handleRestart() {
-        buildWordToPaths()
-
-        candidateListBox.clearItems()
         historyBox.text = ""
-        wordToPaths!!.keys.sorted()
-            .forEach { w ->
-                candidateListBox.addItem(w) { this.handleCandidate() }
-            }
-    }
-
-    fun handleToggling(checked: Boolean) {
-        updateCandidates()
+        handleApply()
     }
 
     fun handleCandidate() {
@@ -157,16 +133,12 @@ class App(private val solver: Solver) {
         candidateListBox.removeItem(candidateListBox.selectedIndex)
     }
 
-    private fun handleMask(text: String) {
-        updateCandidates()
-    }
-
-    private fun buildWordToPaths() {
-        val rows = lettersBox.text.split("\\n".toRegex())
+    private fun calculateSolutions() {
+        knownSolutions.clear()
+        val rows = lettersBox.text.split('\n')
             .map { it.trim() }
             .filter { it.isNotEmpty() }
-        val solution = solver.solve(rows)
-        wordToPaths = solution.groupBy { it.word }
+        knownSolutions.addAll(solver.solve(rows).map { it.word })
     }
 
     fun display() {
