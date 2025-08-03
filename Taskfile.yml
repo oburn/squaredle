@@ -25,12 +25,14 @@ tasks:
   gen-jar:
     desc: Builds the executable JAR
     cmds:
-      - mvn compile assembly:single
+      - mvn package assembly:single
     sources:
       - pom.xml
-      - src/main/java/**/*.java
+      - src/main/kotlin/**/*.kt
+      - src/main/kotlin/lantern/Runner.kt
     generates:
       - "{{.JAR_FILE}}"
+    method: timestamp
 
   run:
     deps: [gen-jar]
