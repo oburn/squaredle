@@ -101,11 +101,11 @@ class App(private val solver: Solver) {
     fun updateCandidates() {
         val untriedWords = knownSolutions.subtract(historyWords())
 
-        // Apply grouping
+        // Apply grouping and sorting
         val groupedWords = if (toggleGroupBy.isChecked(0)) {
-            untriedWords.groupBy { it.length }.entries.sortedByDescending { it.key }.flatMap { it.value }
+            untriedWords.groupBy { it.length }.entries.sortedByDescending { it.key }.flatMap { it.value.sorted() }
         } else {
-            untriedWords
+            untriedWords.sorted()
         }
 
         // Apply mask
