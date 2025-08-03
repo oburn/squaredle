@@ -13,28 +13,43 @@ class App(private val solver: Solver) {
     private var wordToPaths: Map<String, List<WordPath>>? = null
     private val terminal: Terminal = DefaultTerminalFactory().createTerminal()
     private val screen: Screen = TerminalScreen(terminal)
-    private val lettersBox: TextBox = TextBox(
-        TerminalSize(18, terminal.terminalSize.rows - 10)
-    )
-    private val candidateListBox: ActionListBox = ActionListBox(
-        TerminalSize(
-            terminal.terminalSize.columns - 23,
-            terminal.terminalSize.rows - 8
-        )
-    )
-    private val pathsBox: TextBox = TextBox(
-        TerminalSize(terminal.terminalSize.columns - 2, 4)
-    )
+    private val lettersBox: TextBox =
+        TextBox(TerminalSize(18, terminal.terminalSize.rows - 10))
 
-    init {
-        pathsBox.isReadOnly = true
-        pathsBox.isEnabled = false
-    }
+    private val candidateListBox: ActionListBox =
+        ActionListBox(
+            TerminalSize(
+                terminal.terminalSize.columns - 23,
+                terminal.terminalSize.rows - 6
+            )
+        )
+
+    private val historyBox: TextBox =
+        TextBox(
+            TerminalSize(
+                terminal.terminalSize.columns - 23,
+                terminal.terminalSize.rows - 6
+            )
+        ).setReadOnly(true)
+
+    private val toggleGroupBy: CheckBoxList<String> =
+        CheckBoxList<String>()
+            .addItem("Group by len")
+            .addListener { itemIndex, checked -> handleToggling(checked) }
+
+    private val maskBox: TextBox =
+        TextBox(TerminalSize(18, 1))
+            .setTextChangeListener { newText, ignored -> handleMask(newText) }
+
+    private val debugBox: TextBox =
+        TextBox(TerminalSize(terminal.terminalSize.columns - 2, 2))
+            .setReadOnly(true)
+            .setEnabled(false)
 
     fun buildPathsPanel(): Border? {
         val result = Panel(LinearLayout(Direction.HORIZONTAL))
-        result.addComponent(pathsBox)
-        return result.withBorder(Borders.doubleLineBevel("Paths:"))
+        result.addComponent(debugBox)
+        return result.withBorder(Borders.doubleLineBevel("Debug:"))
     }
 
     fun buildLettersPanel(): Border? {
@@ -43,20 +58,29 @@ class App(private val solver: Solver) {
         return result.withBorder(Borders.doubleLineBevel("Letters:"))
     }
 
-    fun buildCandidatesPanel(): Border? {
+    fun buildCandidatesPanel(): Border {
         val result = Panel(LinearLayout(Direction.HORIZONTAL))
         result.addComponent(candidateListBox)
         return result.withBorder(Borders.doubleLineBevel("Candidates:"))
     }
 
-    fun buildActionsPanel(): Border? {
+    fun buildHistoryPanel(): Border {
         val result = Panel(LinearLayout(Direction.HORIZONTAL))
+        result.addComponent(historyBox)
+        return result.withBorder(Borders.doubleLineBevel("History:"))
+    }
+
+    fun buildActionsPanel(): Border {
+        val result = Panel(LinearLayout(Direction.VERTICAL))
 
         val applyButton = Button("Apply") { this.handleApply() }
         val restartButton = Button("Restart") { this.handleRestart() }
 
         result.addComponent(applyButton)
         result.addComponent(restartButton)
+        result.addComponent(toggleGroupBy)
+        result.addComponent(Label("Mask:"))
+        result.addComponent(maskBox)
 
         return result.withBorder(Borders.doubleLineBevel("Actions:"))
     }
@@ -77,15 +101,25 @@ class App(private val solver: Solver) {
         buildWordToPaths()
 
         candidateListBox.clearItems()
+        historyBox.text = ""
         wordToPaths!!.keys.sorted()
             .forEach { w ->
                 candidateListBox.addItem(w) { this.handleCandidate() }
             }
     }
 
+    fun handleToggling(checked: Boolean) {
+        debugBox.text = "Toggle state: $checked"
+    }
+
     fun handleCandidate() {
-        pathsBox.text = "Need to handle: " + candidateListBox.selectedIndex
+        debugBox.text = "Need to handle: " + candidateListBox.selectedIndex
+        historyBox.text = candidateListBox.selectedItem.toString() + "\n" + historyBox.text
         candidateListBox.removeItem(candidateListBox.selectedIndex)
+    }
+
+    private fun handleMask(text: String) {
+        debugBox.text = "Mask became: $text"
     }
 
     private fun buildWordToPaths() {
@@ -108,6 +142,7 @@ class App(private val solver: Solver) {
         val lettersCandidatesActionsPanel = Panel(LinearLayout(Direction.HORIZONTAL))
         lettersCandidatesActionsPanel.addComponent(lettersActionsPanel)
         lettersCandidatesActionsPanel.addComponent(buildCandidatesPanel())
+        lettersCandidatesActionsPanel.addComponent(buildHistoryPanel())
 
         val outerPanel = Panel(LinearLayout(Direction.VERTICAL))
         outerPanel.addComponent(lettersCandidatesActionsPanel)
