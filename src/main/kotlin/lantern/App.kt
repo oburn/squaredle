@@ -85,16 +85,56 @@ class App(private val solver: Solver) {
         return result.withBorder(Borders.doubleLineBevel("Actions:"))
     }
 
-    fun handleApply() {
-        buildWordToPaths()
+    fun historyWords(): List<String> {
+        return historyBox.text.split('\n')
+    }
 
-        for (i in candidateListBox.itemCount - 1 downTo 0) {
-            // ugly hack relying on toString of the Runnable being to word
-            val word: String? = candidateListBox.getItemAt(i).toString()
-            if (!wordToPaths!!.containsKey(word)) {
-                candidateListBox.removeItem(i)
-            }
+    fun maskRegex(): Regex {
+        return try {
+            maskBox.text.toRegex()
+        } catch (e: IllegalArgumentException) {
+            debugBox.text = "Mask is not a regex: ${e.message}"
+            Regex("WILL NOT MATCH")
         }
+    }
+
+    fun updateCandidates() {
+        val rows = lettersBox.text.split('\n')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+        val solution = solver.solve(rows)
+        val allWords = solution.map { it.word }.toSortedSet()
+        val untriedWords = allWords.subtract(historyWords())
+
+        // Apply grouping
+        val groupedWords = if (toggleGroupBy.isChecked(0)) {
+            untriedWords.groupBy { it.length }.entries.sortedByDescending { it.key }.flatMap { it.value }
+        } else {
+            untriedWords
+        }
+
+        // Apply mask
+        val applyRegex = maskRegex()
+        val maskedWords = groupedWords.filter { applyRegex.containsMatchIn(it) }
+
+        candidateListBox.clearItems()
+        maskedWords.forEach { w ->
+            candidateListBox.addItem(w) { this.handleCandidate() }
+        }
+    }
+
+    fun handleApply() {
+        updateCandidates()
+//        debugBox.text = "History has ${historyWords().size} words"
+//        buildWordToPaths()
+//
+//        for (i in candidateListBox.itemCount - 1 downTo 0) {
+//            // ugly hack relying on toString of the Runnable being to word
+//            val word: String? = candidateListBox.getItemAt(i).toString()
+//            if (!wordToPaths!!.containsKey(word)) {
+//                candidateListBox.removeItem(i)
+//            }
+//        }
     }
 
     fun handleRestart() {
@@ -109,17 +149,16 @@ class App(private val solver: Solver) {
     }
 
     fun handleToggling(checked: Boolean) {
-        debugBox.text = "Toggle state: $checked"
+        updateCandidates()
     }
 
     fun handleCandidate() {
-        debugBox.text = "Need to handle: " + candidateListBox.selectedIndex
         historyBox.text = candidateListBox.selectedItem.toString() + "\n" + historyBox.text
         candidateListBox.removeItem(candidateListBox.selectedIndex)
     }
 
     private fun handleMask(text: String) {
-        debugBox.text = "Mask became: $text"
+        updateCandidates()
     }
 
     private fun buildWordToPaths() {
