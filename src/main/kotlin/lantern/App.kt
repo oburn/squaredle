@@ -86,12 +86,12 @@ class App(private val solver: Solver) {
         return result.withBorder(Borders.doubleLineBevel("Actions:"))
     }
 
-    fun maskRegex(): Regex {
+    fun maskFilter(words: List<String>): List<String> {
         return try {
-            maskBox.text.toRegex()
+            words.filter { maskBox.text.toRegex().containsMatchIn(it) }
         } catch (e: IllegalArgumentException) {
             debugBox.text = "Mask is not a regex: ${e.message}"
-            Regex("WILL NOT MATCH")
+            words
         }
     }
 
@@ -106,8 +106,7 @@ class App(private val solver: Solver) {
         }
 
         // Apply mask
-        val applyRegex = maskRegex()
-        val maskedWords = groupedWords.filter { applyRegex.containsMatchIn(it) }
+        val maskedWords = maskFilter(groupedWords)
 
         candidateListBox.clearItems()
         maskedWords.forEach { w ->
@@ -118,8 +117,7 @@ class App(private val solver: Solver) {
     fun updateHistory() {
         val sortedWords = historyWords.sorted()
         // Apply mask
-        val applyRegex = maskRegex()
-        val maskedWords = sortedWords.filter { applyRegex.containsMatchIn(it) }
+        val maskedWords = maskFilter(sortedWords)
         historyBox.text = maskedWords.joinToString(separator = "\n")
     }
 
