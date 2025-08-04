@@ -10,7 +10,8 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
 
 class App(private val solver: Solver) {
-    private val knownSolutions: MutableSet<String> = mutableSetOf()
+    private val knownSolutions = mutableSetOf<String>()
+    private val historyWords = mutableSetOf<String>()
     private val terminal: Terminal = DefaultTerminalFactory().createTerminal()
     private val screen: Screen = TerminalScreen(terminal)
     private val lettersBox: TextBox =
@@ -39,7 +40,7 @@ class App(private val solver: Solver) {
 
     private val maskBox: TextBox =
         TextBox(TerminalSize(18, 1))
-            .setTextChangeListener { newText, ignored -> updateCandidates() }
+            .setTextChangeListener { newText, ignored -> handleMaskChange() }
 
     private val debugBox: TextBox =
         TextBox(TerminalSize(terminal.terminalSize.columns - 2, 2))
@@ -85,10 +86,6 @@ class App(private val solver: Solver) {
         return result.withBorder(Borders.doubleLineBevel("Actions:"))
     }
 
-    fun historyWords(): List<String> {
-        return historyBox.text.split('\n')
-    }
-
     fun maskRegex(): Regex {
         return try {
             maskBox.text.toRegex()
@@ -99,7 +96,7 @@ class App(private val solver: Solver) {
     }
 
     fun updateCandidates() {
-        val untriedWords = knownSolutions.subtract(historyWords())
+        val untriedWords = knownSolutions.subtract(historyWords)
 
         // Apply grouping and sorting
         val groupedWords = if (toggleGroupBy.isChecked(0)) {
@@ -118,18 +115,33 @@ class App(private val solver: Solver) {
         }
     }
 
+    fun updateHistory() {
+        val sortedWords = historyWords.sorted()
+        // Apply mask
+        val applyRegex = maskRegex()
+        val maskedWords = sortedWords.filter { applyRegex.containsMatchIn(it) }
+        historyBox.text = maskedWords.joinToString(separator = "\n")
+    }
+
+    fun handleMaskChange() {
+        updateHistory()
+        updateCandidates()
+    }
+
     fun handleApply() {
         calculateSolutions()
         updateCandidates()
     }
 
     fun handleRestart() {
-        historyBox.text = ""
+        historyWords.clear()
         handleApply()
+        updateHistory()
     }
 
     fun handleCandidate() {
-        historyBox.text = candidateListBox.selectedItem.toString() + "\n" + historyBox.text
+        historyWords.add(candidateListBox.selectedItem.toString())
+        updateHistory()
         candidateListBox.removeItem(candidateListBox.selectedIndex)
     }
 
