@@ -78,7 +78,7 @@ class App(private val solver: Solver) {
         val restartButton = Button("Restart") { this.handleRestart() }
 
         result.addComponent(applyButton)
-        result.addComponent(restartButton)
+//        result.addComponent(restartButton)
         result.addComponent(toggleGroupBy)
         result.addComponent(Label("Mask:"))
         result.addComponent(maskBox)
